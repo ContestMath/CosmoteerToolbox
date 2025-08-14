@@ -1,0 +1,1 @@
+This repositories goal is to provide various tools that can do useful calculations or even macros for your cosmoteer ships. The documentation is sparse right now, but i hope to change that in the future. 
