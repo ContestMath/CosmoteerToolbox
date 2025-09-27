@@ -26,7 +26,7 @@ def total_cost_general(base_cost, crew_count, heat_use, power_use):
 
 def total_cost_pump(base_cost, crew_count, heat_per_beam, power_per_beam):
     base_cost = total_cost_general(base_cost, crew_count, 0, 0)
-    pump_heat_cost = heat_cost(heat_per_beam) * beam_count                                  #scales logarithmically with beam count
+    pump_heat_cost = heat_cost(heat_per_beam) * beam_count                        #scales logarithmically with beam count
     pump_power_cost = power_cost(power_per_beam) * beam_count * amp_factor        #scales linearly with beam count
     return base_cost + pump_heat_cost + pump_power_cost
 
@@ -109,20 +109,26 @@ def plot_optimal_damage_curve(damage_subbed, max_budgets):
     plt.title('Optimal Damage vs Budget')
     plot_setup()
 
-def plot_optimal_trl_curve(damage_subbed, max_budgets):
+def plot_optimal_trl_curve(damage_subbed_trl, max_budgets):
     for max_budget in max_budgets:
         budgets = list(range(40, max_budget, floor(max_budget/100)))
-        results = optimal_curve(damage_subbed, budgets)
-        plt.plot(budgets, results)
+        results_trl = optimal_curve(damage_subbed_trl, budgets)
 
-    plt.xlabel('Budget')
-    plt.ylabel('#TRL')
-    plt.title('Optimal #TRL vs Budget')
+        results_amp = []
+        for element in list(zip(results_trl, budgets)):
+            results_amp.append(element[1]/float(amp_total_cost.subs(beam_count, element[0])))
+        plt.plot(results_trl, results_amp)
+
+    plt.xlabel('#TRL')
+    plt.ylabel('#Amps')
+    plt.title('Optimal #Amps vs #TRL')
     plot_setup()
 
+
+print("process started")
 #plot3d(subbedDamage(damage_target.ShieldDebuff),(budget, 0, 10000),(beam_count, 1, 100),xlabel='Budget', ylabel='Beam Count',zlabel='Damage')
 #plot(damage(DamageTarget.ShieldPierce).subs(beam_count, 1)/damage(DamageTarget.ShieldPierce).subs(beam_count, 1).subs(amp_count, 0), (amp_count, 1, 100))
 #plot(amp_total.subs(beam_count, 2), (amp_count, 0, 10))
 #plot_optimal_damage_curve(subbedDamage(damage_target.Armor), [2001, 1001])
-plot_optimal_trl_curve(subbedDamage(damage_target.ShieldPierce), [5001])
+plot_optimal_trl_curve(subbedDamage(damage_target.Armor), [5001])
 
