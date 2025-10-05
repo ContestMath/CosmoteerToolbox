@@ -27,23 +27,24 @@ def total_cost_general(base_cost, crew_count, heat_use, power_use):
 def total_cost_pump(base_cost, crew_count, heat_per_beam, power_per_beam):
     base_cost = total_cost_general(base_cost, crew_count, 0, 0)
     pump_heat_cost = heat_cost(heat_per_beam) * beam_count                        #scales logarithmically with beam count
-    pump_power_cost = power_cost(power_per_beam) * beam_count * amp_factor        #scales linearly with beam count
+    pump_power_cost = power_cost(power_per_beam) * beam_count                     #scales linearly with beam count
     return base_cost + pump_heat_cost + pump_power_cost
 
 wire_cost = 0.3
 radiator_cost = 10
-radiator_dissipation = 550
-power_cost_per_1_power = 75/10.125      #Assumes useage of non oc LR
+radiator_dissipation = 1100
+power_cost_per_1_power = (50+heat_cost(1400))/11.25     #Assumes useage of non oc LR
 door_cost = 0.1
-cost_per_crew = 15.6/24                 #Assumes perfect barracks ussage
+cost_per_crew = 15.6/24                                 #Assumes perfect barracks ussage
 
 amp_base_cost = 4.5
-amp_heat_per_beam = 100
-amp_power_per_beam = 0.2
+amp_heat_per_beam = 200
+amp_power_per_beam = 0.4
 
 trl_base_cost = 16
-trl_power_use = 0.88
-trl_heat_use = 250
+trl_power_use = 1.75
+trl_heat_use = 600
+trl_base_damage = 2.25
 
 trl_utilizationScale = 0.5
 trl_efficiency = 0.5
@@ -65,7 +66,7 @@ amp_expr = solve(budget_equation, amp_count)[0]
 
 def damage(damage_target):
     if damage_target == DamageTarget.Armor or damage_target == DamageTarget.ShieldPierce:
-        return beam_count * thermal_intensity ** heat_pool_ampo_exponent
+        return trl_base_damage * beam_count * thermal_intensity ** heat_pool_ampo_exponent
     #elif damage_target == DamageTarget.ShieldPierce:
         #return beam_count * (thermal_intensity ** heat_pool_ampo_exponent) * (thermal_intensity**0.85 / (250 + thermal_intensity**0.85))
     elif damage_target == DamageTarget.ShieldDebuff:
@@ -124,11 +125,29 @@ def plot_optimal_trl_curve(damage_subbed_trl, max_budgets):
     plt.title('Optimal #Amps vs #TRL')
     plot_setup()
 
+def cost_damage_ratio(turret_amount, amp_amount, damage_target):
+    turret_cost = turret_amount*trl_total_cost
+    amp_cost = amp_amount*amp_total_cost.subs(beam_count, turret_amount).subs(amp_count, amp_amount)
+    cost = turret_cost+amp_cost
+    d = damage(damage_target).subs(beam_count, turret_amount).subs(amp_count, amp_amount)
+    return float(d/cost*100)
+
+def evaluate_table(func):
+    x = 10
+    y = 24
+
+    header = ["x\\y"] + [str(j) for j in range(0, y+1)]
+    print("\t".join(header))
+
+    for i in range(0, x+1):
+        row = [str(i)] + [f"{func(i, j):.2f}" for j in range(0, y+1)]
+        print("\t".join(row))
 
 print("process started")
 #plot3d(subbedDamage(damage_target.ShieldDebuff),(budget, 0, 10000),(beam_count, 1, 100),xlabel='Budget', ylabel='Beam Count',zlabel='Damage')
 #plot(damage(DamageTarget.ShieldPierce).subs(beam_count, 1)/damage(DamageTarget.ShieldPierce).subs(beam_count, 1).subs(amp_count, 0), (amp_count, 1, 100))
 #plot(amp_total.subs(beam_count, 2), (amp_count, 0, 10))
 #plot_optimal_damage_curve(subbedDamage(damage_target.Armor), [2001, 1001])
-plot_optimal_trl_curve(subbedDamage(damage_target.Armor), [5001])
-
+#plot_optimal_trl_curve(subbedDamage(damage_target.Armor), [5001])
+#print(cost_damage_ratio(2, 5, DamageTarget.Armor))
+evaluate_table(lambda x, y: cost_damage_ratio(x, y, DamageTarget.Armor))
