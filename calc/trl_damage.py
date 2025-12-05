@@ -37,15 +37,6 @@ power_cost_per_1_power = (50+heat_cost(1400))/11.25     #Assumes useage of non o
 door_cost = 0.1
 cost_per_crew = 15.6/24                                 #Assumes perfect barracks ussage
 
-amp_base_cost = 4.5
-amp_heat_per_beam = 200
-amp_power_per_beam = 0.4
-
-trl_base_cost = 16
-trl_power_use = 1.75
-trl_heat_use = 600
-trl_base_damage = 2.25
-
 trl_utilizationScale = 0.5
 trl_efficiency = 0.5
 heat_pool_ampo_exponent = 0.67
@@ -53,10 +44,20 @@ shield_overload_amp_factor = 0.006
 shield_overload_dilation_factor = 0.01
 amp_percent = 1.1
 dilation_percent = 0.5
+
 amp_factor = 1 / ((beam_count - 1) * trl_utilizationScale + 1)**(1-trl_efficiency)
 dilation_factor = amp_factor
 thermal_intensity = 1 + amp_factor * amp_percent * amp_count
 thermal_radius = 0.5 + dilation_factor * dilation_percent * dilation_count
+
+amp_base_cost = 4.5
+amp_heat_per_beam = 200
+amp_power_per_beam = 0.4*amp_factor
+
+trl_base_cost = 16
+trl_power_use = 1.75
+trl_heat_use = 600
+trl_base_damage = 2.25
 
 trl_total_cost = total_cost_general(trl_base_cost, 4, trl_heat_use, trl_power_use)
 amp_total_cost = total_cost_pump(amp_base_cost, 0, amp_heat_per_beam, amp_power_per_beam)
